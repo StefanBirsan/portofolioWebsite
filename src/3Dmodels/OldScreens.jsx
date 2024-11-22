@@ -1,24 +1,44 @@
-import React, { useRef } from 'react'
-import { useGLTF } from '@react-three/drei'
+import { useRef } from 'react'
+import {PerspectiveCamera, RenderTexture, useGLTF} from '@react-three/drei'
+import {useFrame} from "@react-three/fiber";
+import {SpinningObject} from "../Components/SpinningObject.jsx";
+
+const Screen = ({ frame, panel, children, ...props }) => {
+    const { nodes, materials } = useGLTF('/models/old_computers.glb')
+    return (
+        <group {...props}>
+            <mesh castShadow receiveShadow geometry={nodes[frame].geometry} material={materials.Texture} />
+            <mesh geometry={nodes[panel].geometry}>
+                <meshBasicMaterial toneMapped={false}>
+                    <RenderTexture width={512} height={512} attach="map" anisotropy={16}>
+                        {children}
+                    </RenderTexture>
+                </meshBasicMaterial>
+            </mesh>
+        </group>
+    )
+}
+
+
+function ScreenInteractive(props) {
+    return (
+        <Screen {...props}>
+            <PerspectiveCamera makeDefault manual aspect={1 / 1} position={[0, 0, 10]} />
+            <color attach="background" args={['#4287f5']} />
+            <ambientLight intensity={Math.PI / 2} />
+            <pointLight decay={0} position={[10, 10, 10]} intensity={Math.PI} />
+            <pointLight decay={0} position={[-10, -10, -10]} />
+            <SpinningObject position={[-3.15, 0.75, 0]} scale={0.5} text={"About"}/>
+        </Screen>
+    )
+}
+
 
 const OldScreens = (props) => {
     const { nodes, materials } = useGLTF('/models/old_computers.glb')
     return (
         <group {...props} dispose={null}>
-            <group position={[0.27, 1.529, -2.613]}>
-                <mesh
-                    castShadow
-                    receiveShadow
-                    geometry={nodes.Object_206.geometry}
-                    material={materials.Texture}
-                />
-                <mesh
-                    castShadow
-                    receiveShadow
-                    geometry={nodes.Object_207.geometry}
-                    material={materials.Screen}
-                />
-            </group>
+            <ScreenInteractive frame="Object_206" panel="Object_207" position={[0.27, 1.529, -2.613]} />
             <group position={[-1.43, 2.496, -1.8]} rotation={[0, 1.002, 0]}>
                 <mesh
                     castShadow
